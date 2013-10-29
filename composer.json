@@ -1,0 +1,19 @@
+{
+    "name": "useallfive/doctrine-web-console",
+    "description": "Doctrine Web Console Service Provider",
+    "keywords": ["pimple", "silex", "doctrine", "orm", "console", "web"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Zach Brown",
+            "email": "zeebz91@gmail.com"
+        }
+    ],
+    "require": {
+        "dflydev/doctrine-orm-service-provider": "1.0.*@dev",
+        "silex/silex": "~1.1"
+    },
+    "autoload": {
+        "psr-0": {"UseAllFive\\DoctrineWebConsole": "src/"}
+    }
+}
