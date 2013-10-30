@@ -37,15 +37,6 @@ class ConsoleControllerProvider implements ControllerProviderInterface
 
         $controllers->post('/execute', function (Request $request, Application $app) {
             $helperSet = ConsoleRunner::createHelperSet($app['orm.em']);
-            if (!($helperSet instanceof HelperSet)) {
-                foreach ($GLOBALS as $helperSetCandidate) {
-                    if ($helperSetCandidate instanceof HelperSet) {
-                        $helperSet = $helperSetCandidate;
-                        break;
-                    }
-                }
-            }
-
             ob_start();
             $output = new StreamOutput(fopen("php://output", "w"));
             $_SERVER['argv'] = explode(' ', "doctrine ".$request->request->get('command'));
