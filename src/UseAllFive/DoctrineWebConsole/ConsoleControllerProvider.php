@@ -4,7 +4,6 @@ namespace UseAllFive\DoctrineWebConsole;
 
 use Silex\Application;
 use Silex\ControllerProviderInterface;
-use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\HttpFoundation\Request;
 use UseAllFive\DoctrineWebConsole\Console\Tools\ConsoleRunner;
