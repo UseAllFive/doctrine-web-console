@@ -11,16 +11,20 @@ use UseAllFive\DoctrineWebConsole\Console\Tools\ConsoleRunner;
 
 class ConsoleControllerProvider implements ControllerProviderInterface
 {
+    protected $commandPath;
+
     protected $customCommands;
 
     /**
-     * Pass custom doctrine commands to this method
-     * to enable them in the web console.
+     * If a command path is not specified, commands will be executed
+     * in the web directory's path.
      *
-     * @param array $customCommands Custom console commands
+     * @param array $commandPath Path in which commands will be executed
+     * @param array $customCommands Extra console commands
      */
-    public function __construct(array $customCommands = array())
+    public function __construct($commandPath = null, array $customCommands = array())
     {
+        $this->commandPath = $commandPath;
         $this->customCommands = $customCommands;
     }
 
@@ -41,6 +45,14 @@ class ConsoleControllerProvider implements ControllerProviderInterface
             $output = new StreamOutput(fopen("php://output", "w"));
             $_SERVER['argv'] = explode(' ', "doctrine ".$request->request->get('command'));
             $_SERVER['argc'] = count($_SERVER['argv']);
+            if (null !== $this->commandPath) {
+                if (@!is_dir($this->commandPath)) {
+                    throw new \InvalidArgumentException(
+                        "Unable to change directories into the specified command directory"
+                    );
+                }
+                chdir($this->commandPath);
+            }
             ConsoleRunner::run($helperSet, $this->customCommands, $output);
             return ob_get_clean();
         });
