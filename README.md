@@ -22,3 +22,38 @@ $app->mount(
 $app->run();
 ```
 You're all set! Visit the the `/console` url of your site to use.
+
+## Specifying a command path
+If a command path is not specified, commands will be executed in the current working directory of the console controller (the web directory of your project). While this is fine for most commands, it's not ideal for a command which requires a path. You can specify a path in the first argument of the `ConsoleControllerProvider` constructor.
+```php
+<?php
+$app = new Silex\Application();
+// ...
+$app->mount(
+        '/console',
+        new \UseAllFive\DoctrineWebConsole\ConsoleControllerProvider(__DIR__)
+    )
+;
+$app->run();
+```
+
+## Adding commands
+Adding your own Doctrine commands to the web console is trivial. We'll add the [Doctrine DataFixtures Command](https://github.com/UseAllFive/doctrine-data-fixtures-command) for this example.
+
+The second argument of the `ConsoleControllerProvider` constructor takes an array of `Symfony\Component\Console\Command\Command` instances which is then passed to the Doctrine `ConsoleRunner`.
+```php
+<?php
+$app = new Silex\Application();
+// ...
+$app->mount(
+        '/console',
+        new \UseAllFive\DoctrineWebConsole\ConsoleControllerProvider(
+            __DIR__,
+            array(
+                new \UseAllFive\Command\LoadDataFixturesDoctrineCommand(),
+            )
+        )
+    )
+;
+$app->run();
+```
