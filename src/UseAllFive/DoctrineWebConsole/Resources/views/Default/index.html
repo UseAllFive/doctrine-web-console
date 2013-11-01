@@ -73,6 +73,8 @@
         }
 
         function _init() {
+            var ENTER_KEY = 13;
+
             _$command = $("#command");
             _$log = $("#log");
 
@@ -80,7 +82,7 @@
                 .focus()
                 .keydown(function(e) {
                     switch(e.which) {
-                        case 13:
+                        case ENTER_KEY:
                             _execute();
                             break;
                     }
