@@ -49,17 +49,55 @@
     </div>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script type="text/javascript">
+    window.util = window.util || {};
+    util.storage = (function() {
+        var hasStorage = (function () {
+            try {
+                return 'localStorage' in window && window['localStorage'] !== null;
+            } catch (e) {
+                return false;
+            }
+        })();
+
+        function get(key) {
+            if ( hasStorage ) {
+                return localStorage.getItem(key);
+            }
+            return null;
+        }
+
+        function set(key, val) {
+            if ( hasStorage ) {
+                localStorage.setItem(key, val);
+            }
+        }
+
+        function unset(key) {
+            set(key, null);
+        }
+
+        return {
+          'get': get,
+          'set': set,
+          'unset': unset
+        }
+    })();
+
     window.ua5WebConsole = (function () {
         var _$command;
         var _$log;
-        var _logHistory = [];
+        var _logHistory;
         var _logHistoryIndex = 0;
 
         function _execute() {
             var cmd = _$command.val();
 
             _$command.prop('disabled', true);
-            _logHistory.push(cmd);
+            if ("" != cmd) {
+                _logHistory.push(cmd);
+                util.storage.set('_logHistory', JSON.stringify(_logHistory));
+            }
+
             _logHistoryIndex = 0;
 
             $.ajax({
@@ -99,6 +137,7 @@
 
             _$command = $("#command");
             _$log = $("#log");
+            _logHistory = JSON.parse(util.storage.get('_logHistory')) || [];
 
             _$command
                 .focus()
