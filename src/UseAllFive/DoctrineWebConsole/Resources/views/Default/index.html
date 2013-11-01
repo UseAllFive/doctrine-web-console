@@ -49,30 +49,20 @@
     </div>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script type="text/javascript">
-    $(document).ready(function() {
-        var _$command = $("#command");
-        var _$log = $("#log");
-
-        _$command
-        .focus()
-        .keydown(function(e) {
-            switch(e.which) {
-                case 13:
-                    _execute();
-                    break;
-            }
-        })
-        ;
-
-        _execute();
+    window.ua5WebConsole = (function () {
+        var _$command;
+        var _$log;
 
         function _execute() {
+            var cmd = _$command.val();
+
             _$command.prop('disabled', true);
+
             $.ajax({
                 url: 'execute',
                 type: 'POST',
                 data: {
-                    command: _$command.val()
+                    command: cmd
                 },
                 complete: function(jqXhr) {
                     _$log.append(jqXhr.responseText + "\n");
@@ -82,9 +72,34 @@
             });
         }
 
+        function _init() {
+            _$command = $("#command");
+            _$log = $("#log");
+
+            _$command
+                .focus()
+                .keydown(function(e) {
+                    switch(e.which) {
+                        case 13:
+                            _execute();
+                            break;
+                    }
+                })
+            ;
+            _execute();
+        }
+
         function _scroll() {
             _$log.scrollTop(_$log.prop('scrollHeight'));
         }
+
+        return {
+            'init': _init
+        };
+    })();
+
+    $(document).ready(function() {
+        ua5WebConsole.init();
     });
     </script>
 </body>
