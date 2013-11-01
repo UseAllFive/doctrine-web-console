@@ -52,11 +52,15 @@
     window.ua5WebConsole = (function () {
         var _$command;
         var _$log;
+        var _logHistory = [];
+        var _logHistoryIndex = 0;
 
         function _execute() {
             var cmd = _$command.val();
 
             _$command.prop('disabled', true);
+            _logHistory.push(cmd);
+            _logHistoryIndex = 0;
 
             $.ajax({
                 url: 'execute',
@@ -72,7 +76,25 @@
             });
         }
 
+        function _getPreviousHistory() {
+          _logHistoryIndex += 1;
+          if (_logHistoryIndex > _logHistory.length) {
+            _logHistoryIndex = _logHistory.length;
+          }
+          _populateFromHistory(_logHistoryIndex);
+        }
+
+        function _getNextHistory() {
+          _logHistoryIndex -= 1;
+          if (0 > _logHistoryIndex) {
+            _logHistoryIndex = 0;
+          }
+          _populateFromHistory(_logHistoryIndex);
+        }
+
         function _init() {
+            var UP_ARROW = 38;
+            var DOWN_ARROW = 40;
             var ENTER_KEY = 13;
 
             _$command = $("#command");
@@ -85,10 +107,20 @@
                         case ENTER_KEY:
                             _execute();
                             break;
+                        case DOWN_ARROW:
+                            _getNextHistory();
+                            break;
+                        case UP_ARROW:
+                            _getPreviousHistory();
+                            break;
                     }
                 })
             ;
             _execute();
+        }
+
+        function _populateFromHistory(index) {
+          _$command.val(_logHistory[_logHistory.length - index]);
         }
 
         function _scroll() {
