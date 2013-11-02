@@ -49,30 +49,62 @@
     </div>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script type="text/javascript">
-    $(document).ready(function() {
-        var _$command = $("#command");
-        var _$log = $("#log");
-
-        _$command
-        .focus()
-        .keydown(function(e) {
-            switch(e.which) {
-                case 13:
-                    _execute();
-                    break;
+    window.util = window.util || {};
+    util.storage = (function() {
+        var hasStorage = (function () {
+            try {
+                return 'localStorage' in window && window['localStorage'] !== null;
+            } catch (e) {
+                return false;
             }
-        })
-        ;
+        })();
 
-        _execute();
+        function get(key) {
+            if ( hasStorage ) {
+                return localStorage.getItem(key);
+            }
+            return null;
+        }
+
+        function set(key, val) {
+            if ( hasStorage ) {
+                localStorage.setItem(key, val);
+            }
+        }
+
+        function unset(key) {
+            set(key, null);
+        }
+
+        return {
+          'get': get,
+          'set': set,
+          'unset': unset
+        }
+    })();
+
+    window.ua5WebConsole = (function () {
+        var _$command;
+        var _$log;
+        var _logHistory;
+        var _logHistoryIndex = 0;
 
         function _execute() {
+            var cmd = _$command.val();
+
             _$command.prop('disabled', true);
+            if ("" != cmd) {
+                _logHistory.push(cmd);
+                util.storage.set('_logHistory', JSON.stringify(_logHistory));
+            }
+
+            _logHistoryIndex = 0;
+
             $.ajax({
                 url: 'execute',
                 type: 'POST',
                 data: {
-                    command: _$command.val()
+                    command: cmd
                 },
                 complete: function(jqXhr) {
                     _$log.append(jqXhr.responseText + "\n");
@@ -82,9 +114,65 @@
             });
         }
 
+        function _getPreviousHistory() {
+          _logHistoryIndex += 1;
+          if (_logHistoryIndex > _logHistory.length) {
+            _logHistoryIndex = _logHistory.length;
+          }
+          _populateFromHistory(_logHistoryIndex);
+        }
+
+        function _getNextHistory() {
+          _logHistoryIndex -= 1;
+          if (0 > _logHistoryIndex) {
+            _logHistoryIndex = 0;
+          }
+          _populateFromHistory(_logHistoryIndex);
+        }
+
+        function _init() {
+            var UP_ARROW = 38;
+            var DOWN_ARROW = 40;
+            var ENTER_KEY = 13;
+
+            _$command = $("#command");
+            _$log = $("#log");
+            _logHistory = JSON.parse(util.storage.get('_logHistory')) || [];
+
+            _$command
+                .focus()
+                .keydown(function(e) {
+                    switch(e.which) {
+                        case ENTER_KEY:
+                            _execute();
+                            break;
+                        case DOWN_ARROW:
+                            _getNextHistory();
+                            break;
+                        case UP_ARROW:
+                            _getPreviousHistory();
+                            break;
+                    }
+                })
+            ;
+            _execute();
+        }
+
+        function _populateFromHistory(index) {
+          _$command.val(_logHistory[_logHistory.length - index]);
+        }
+
         function _scroll() {
             _$log.scrollTop(_$log.prop('scrollHeight'));
         }
+
+        return {
+            'init': _init
+        };
+    })();
+
+    $(document).ready(function() {
+        ua5WebConsole.init();
     });
     </script>
 </body>
