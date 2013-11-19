@@ -10,6 +10,7 @@
         }
     ],
     "require": {
+        "symfony/console": "2.*",
         "dflydev/doctrine-orm-service-provider": "1.0.*@dev",
         "silex/silex": "~1.1"
     },
