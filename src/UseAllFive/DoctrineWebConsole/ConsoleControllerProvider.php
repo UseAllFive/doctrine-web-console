@@ -40,8 +40,8 @@ class ConsoleControllerProvider implements ControllerProviderInterface
 
         $controllers->post('/execute', function (Request $request, Application $app) {
             $helperSet = ConsoleRunner::createHelperSet($app['orm.em']);
-            ob_start();
-            $output = new StreamOutput(fopen("php://output", "w"));
+            $tempResPtr = fopen("php://temp", "r+");
+            $streamOutput = new StreamOutput($tempResPtr);
             $_SERVER['argv'] = explode(' ', "doctrine ".$request->request->get('command'));
             $_SERVER['argc'] = count($_SERVER['argv']);
             if (null !== $this->commandPath) {
@@ -52,8 +52,11 @@ class ConsoleControllerProvider implements ControllerProviderInterface
                 }
                 chdir($this->commandPath);
             }
-            ConsoleRunner::run($helperSet, $this->customCommands, $output);
-            return ob_get_clean();
+            ConsoleRunner::run($helperSet, $this->customCommands, $streamOutput);
+
+            rewind($tempResPtr);
+            $strResponse = stream_get_contents($tempResPtr);
+            return $strResponse;
         });
 
         return $controllers;
